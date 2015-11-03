@@ -4,7 +4,7 @@ interpolation non linear
  private void button_Click(object sender, EventArgs e)
       {
 
-        pictureBox1.Image = Image.FromFile("clown_reduced_grey.bmp");
+        pictureBox1.Image = Image.FromFile("clown.bmp");
         Bitmap bmp = (Bitmap)pictureBox1.Image;
         Bitmap bmp2 = new Bitmap(bmp.Width * 2, bmp.Height * 2);
 
