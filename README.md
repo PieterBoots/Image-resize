@@ -37,7 +37,7 @@ interpolation non linear
             dat[x-1,y+1],
             dat[x,y+1],
             dat[x+1,y+1]};
-            int cls = resize.classifyX(Vs);
+            int cls = Resize.classifyX(Vs);
 
             double[] W1 = new double[9];
             double[] W2 = new double[9];
@@ -45,16 +45,16 @@ interpolation non linear
             double[] W4 = new double[9];
             for (int t = 0; t < 9; t++)
             {
-              W1[t] = resize.data3x3[cls, 0, t];
-              W2[t] = resize.data3x3[cls, 1, t];
-              W3[t] = resize.data3x3[cls, 2, t];
-              W4[t] = resize.data3x3[cls, 3, t];
+              W1[t] = Resize.data3x3[cls, 0, t];
+              W2[t] = Resize.data3x3[cls, 1, t];
+              W3[t] = Resize.data3x3[cls, 2, t];
+              W4[t] = Resize.data3x3[cls, 3, t];
             }
 
-            double r1 = resize.filter(W1, Vs);
-            double r2 = resize.filter(W2, Vs);
-            double r3 = resize.filter(W3, Vs);
-            double r4 = resize.filter(W4, Vs);
+            double r1 = Resize.filter(W1, Vs);
+            double r2 = Resize.filter(W2, Vs);
+            double r3 = Resize.filter(W3, Vs);
+            double r4 = Resize.filter(W4, Vs);
 
             if (r1 > 255) { r1 = 255; }; if (r1 < 0) { r1 = 0; }
             if (r2 > 255) { r2 = 255; }; if (r2 < 0) { r2 = 0; }
