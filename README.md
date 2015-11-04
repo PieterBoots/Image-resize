@@ -36,8 +36,8 @@ interpolation non linear
             dat[x,y+1].R,
             dat[x+1,y+1].R};
 
-            int cls = AdaptiveFilter.classifyX(Vs);
-            int[] Rsubs=CalcSubPixels(Vs,cls);
+            int cls = Resize.classifyX(Vs);
+            int[] Rsubs=Resize.CalcSubPixels(Vs,cls);
 
              Vs = new int[]
           {dat[x-1,y-1].G,
@@ -50,8 +50,8 @@ interpolation non linear
             dat[x,y+1].G,
             dat[x+1,y+1].G};
 
-             cls = AdaptiveFilter.classifyX(Vs);
-             int[] Gsubs = CalcSubPixels(Vs, cls);
+             cls = Resize.classifyX(Vs);
+             int[] Gsubs = Resize.CalcSubPixels(Vs, cls);
 
              Vs = new int[]
           {dat[x-1,y-1].B,
@@ -64,8 +64,8 @@ interpolation non linear
             dat[x,y+1].B,
             dat[x+1,y+1].B};
 
-             cls = AdaptiveFilter.classifyX(Vs);
-             int[] Bsubs = CalcSubPixels(Vs, cls);
+             cls = Resize.classifyX(Vs);
+             int[] Bsubs = Resize.CalcSubPixels(Vs, cls);
 
 
              dat2[x * 2, y * 2] = Color.FromArgb(255, Rsubs[0], Gsubs[0], Bsubs[0]);
