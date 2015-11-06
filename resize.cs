@@ -3,10 +3,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 
 public class Resize
 {
+  public static void YUVToRGB(int Y, int U, int V, out int R, out int G, out int B)
+  {
+    int C = Y - 16;
+    int D = U - 128;
+    int E = V - 128;
+
+    R = clip((298 * C + 409 * E + 128) >> 8);
+    G = clip((298 * C - 100 * D - 208 * E + 128) >> 8);
+    B = clip((298 * C + 516 * D + 128) >> 8);
+  }
+
+  public static Color ColorToYUV(Color c, out int Y, out int U, out int V)
+  {
+    Y = ((66 * c.R + 129 * c.G + 25 * c.B + 128) >> 8) + 16;
+    U = ((-38 * c.R - 74 * c.G + 112 * c.B + 128) >> 8) + 128;
+    V = ((112 * c.R - 94 * c.G - 18 * c.B + 128) >> 8) + 128;
+    return c;
+  }
+
+  public static int clip(int inp)
+  {
+    if (inp > 255) { inp = 255; }
+    if (inp < 0) { inp = 0; }
+    return inp;
+  }
+
+  public static int[] CalcSubPixels(int[] inp, int pick)
+  {
+    int[] output = new int[4];
+    for (int n = 0; n < 4; n++)
+    {
+      double[] W = new double[9];
+      for (int t = 0; t < 9; t++)
+      {
+        W[t] = data3x3[pick, n, t];
+      }
+
+      double value = 0;
+      for (int d = 0; d < 9; d++)
+      {
+        value = value + W[d] * inp[d];
+      }
+
+      output[n] = Convert.ToInt32(value / 9);
+      if (output[n] > 255) { output[n] = 255; };
+      if (output[n] < 0) { output[n] = 0; }
+    }
+    return output;
+  }
 
   public static int classifyX(int[] data)
   {
@@ -29,30 +79,98 @@ public class Resize
 
     return a1;
   }
-  
- private static int[] CalcSubPixels(int[] inp,int pick)
-      {       
-        int[] output = new int[4];       
-        for (int n = 0; n < 4; n++)
-        {
-          double[] W = new double[9];
-          for (int t = 0; t < 9; t++)
-          {
-            W[t] = coefs.data3x3[pick, n, t];
-          }
 
-          double value = 0;
-          for (int d = 0; d < 9; d++)
-          {
-            value = value + W[d] * inp[d];
-          }
 
-          output[n] = Convert.ToInt32(value/9);          
-          if (output[n] > 255) { output[n] = 255; }; 
-          if (output[n] < 0) { output[n] = 0; }          
-        }
-        return output;
+  public static Color[,] run(Bitmap bmp)
+  {
+
+    int[,] datY = new int[bmp.Width, bmp.Height];
+    int[,] datU = new int[bmp.Width, bmp.Height];
+    int[,] datV = new int[bmp.Width, bmp.Height];
+    Color[,] datresult = new Color[bmp.Width * 2, bmp.Height * 2];
+
+
+    Color c = Color.Black;
+
+    int Y;
+    int U;
+    int V;
+
+
+    for (int y = 0; y < bmp.Height; y++)
+    {
+      for (int x = 0; x < bmp.Width; x++)
+      {
+        ColorToYUV(bmp.GetPixel(x, y), out Y, out U, out V);
+        datY[x, y] = Y;
+        datU[x, y] = U;
+        datV[x, y] = V;
       }
+    }
+
+    for (int y = 1; y < bmp.Height - 1; y++)
+    {
+      for (int x = 1; x < bmp.Width - 1; x++)
+      {
+
+        int[] Vs = new int[]
+          {datY[x-1,y-1],
+            datY[x,y-1],
+            datY[x+1,y-1],
+            datY[x-1,y],
+            datY[x,y],
+            datY[x+1,y],
+            datY[x-1,y+1],
+            datY[x,y+1],
+            datY[x+1,y+1]};
+
+        int cls = classifyX(Vs);
+        int[] Ysubs = CalcSubPixels(Vs, cls);
+
+        Vs = new int[]
+          {datU[x-1,y-1],
+            datU[x,y-1],
+            datU[x+1,y-1],
+            datU[x-1,y],
+            datU[x,y],
+            datU[x+1,y],
+            datU[x-1,y+1],
+            datU[x,y+1],
+            datU[x+1,y+1]};
+
+        cls = classifyX(Vs);
+        int[] Usubs = CalcSubPixels(Vs, cls);
+
+        Vs = new int[]
+          {datV[x-1,y-1],
+            datV[x,y-1],
+            datV[x+1,y-1],
+            datV[x-1,y],
+            datV[x,y],
+            datV[x+1,y],
+            datV[x-1,y+1],
+            datV[x,y+1],
+            datV[x+1,y+1]};
+
+        cls = classifyX(Vs);
+        int[] Vsubs = CalcSubPixels(Vs, cls);
+
+
+        int R = 0;
+        int G = 0;
+        int B = 0;
+        Resize.YUVToRGB(Ysubs[0], Usubs[0], Vsubs[0], out R, out G, out B);
+        datresult[x * 2, y * 2] = Color.FromArgb(255, R, G, B);
+        Resize.YUVToRGB(Ysubs[1], Usubs[1], Vsubs[1], out R, out G, out B);
+        datresult[x * 2 + 1, y * 2] = Color.FromArgb(255, R, G, B);
+        Resize.YUVToRGB(Ysubs[2], Usubs[2], Vsubs[2], out R, out G, out B);
+        datresult[x * 2, y * 2 + 1] = Color.FromArgb(255, R, G, B);
+        Resize.YUVToRGB(Ysubs[3], Usubs[3], Vsubs[3], out R, out G, out B);
+        datresult[x * 2 + 1, y * 2 + 1] = Color.FromArgb(255, R, G, B);
+      }
+    }
+    return datresult;
+  }
   
    public static double[, ,] data3x3 = new double[,,]
   {
