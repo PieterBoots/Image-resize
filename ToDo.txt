@@ -2,4 +2,4 @@ ToDo list
 
 Add overlapping code.
 Add 5x5 precalculated filters.
-Add better classifier.
+Add better classifier , based on 5 x 5 or 7 x 7 brightness invariant patches.
