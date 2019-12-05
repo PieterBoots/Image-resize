@@ -1,0 +1,5 @@
+ToDo list
+
+Add overlapping code.
+Add 5x5 precalculated filters.
+Add better classifier.
